@@ -1569,10 +1569,10 @@ describe('sidebar agent (#584)', () => {
     expect(match![1]).toContain('Write');
   });
 
-  // #584 — Server Write: server.ts allowedTools includes Write (DRY parity)
-  test('server.ts allowedTools excludes Write (agent is read-only + Bash)', () => {
-    const content = fs.readFileSync(path.join(ROOT, 'browse', 'src', 'server.ts'), 'utf-8');
-    // Find the sidebar allowedTools in the headed-mode path
+  // #584 — Agent manager allowedTools excludes Write (agent is read-only + Bash)
+  test('agent-manager.ts allowedTools excludes Write (agent is read-only + Bash)', () => {
+    const content = fs.readFileSync(path.join(ROOT, 'browse', 'src', 'agent-manager.ts'), 'utf-8');
+    // Find the sidebar allowedTools in the spawnClaude method
     const match = content.match(/--allowedTools['"]\s*,\s*['"]([^'"]+)['"]/);
     expect(match).not.toBeNull();
     expect(match![1]).toContain('Bash');

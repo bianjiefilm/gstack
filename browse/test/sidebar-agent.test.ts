@@ -415,12 +415,13 @@ describe('describeToolCall', () => {
 
 describe('per-tab agent concurrency', () => {
   const serverSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.ts'), 'utf-8');
+  const agentMgrSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'agent-manager.ts'), 'utf-8');
   const agentSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'sidebar-agent.ts'), 'utf-8');
 
-  test('server has per-tab agent state map', () => {
-    expect(serverSrc).toContain('tabAgents');
-    expect(serverSrc).toContain('TabAgentState');
-    expect(serverSrc).toContain('getTabAgent');
+  test('agent-manager has per-tab agent state map', () => {
+    expect(agentMgrSrc).toContain('tabAgents');
+    expect(agentMgrSrc).toContain('TabAgentState');
+    expect(agentMgrSrc).toContain('getTabAgent');
   });
 
   test('server returns per-tab agent status in /sidebar-chat', () => {
@@ -429,12 +430,8 @@ describe('per-tab agent concurrency', () => {
   });
 
   test('spawnClaude accepts forTabId parameter', () => {
-    const spawnFn = serverSrc.slice(
-      serverSrc.indexOf('function spawnClaude('),
-      serverSrc.indexOf('\nfunction ', serverSrc.indexOf('function spawnClaude(') + 1),
-    );
-    expect(spawnFn).toContain('forTabId');
-    expect(spawnFn).toContain('tabState.status');
+    expect(agentMgrSrc).toContain('forTabId');
+    expect(agentMgrSrc).toContain('tabState.status');
   });
 
   test('sidebar-command endpoint uses per-tab agent state', () => {
@@ -444,14 +441,15 @@ describe('per-tab agent concurrency', () => {
   });
 
   test('agent event handler resets per-tab state', () => {
+    // eventTabId in server route, state reset in agent-manager
     expect(serverSrc).toContain('eventTabId');
-    expect(serverSrc).toContain('tabState.status = \'idle\'');
+    expect(agentMgrSrc).toContain("tabState.status = 'idle'");
   });
 
   test('agent event handler processes per-tab queue', () => {
     // After agent_done, should process next message from THIS tab's queue
-    expect(serverSrc).toContain('tabState.queue.length > 0');
-    expect(serverSrc).toContain('tabState.queue.shift');
+    expect(agentMgrSrc).toContain('tabState.queue.length > 0');
+    expect(agentMgrSrc).toContain('tabState.queue.shift');
   });
 
   test('sidebar-agent uses per-tab processing set', () => {
@@ -474,15 +472,11 @@ describe('per-tab agent concurrency', () => {
   });
 
   test('queue entries include tabId', () => {
-    const spawnFn = serverSrc.slice(
-      serverSrc.indexOf('function spawnClaude('),
-      serverSrc.indexOf('\nfunction ', serverSrc.indexOf('function spawnClaude(') + 1),
-    );
-    expect(spawnFn).toContain('tabId: agentTabId');
+    expect(agentMgrSrc).toContain('tabId: this.agentTabId');
   });
 
   test('health check monitors all per-tab agents', () => {
-    expect(serverSrc).toContain('for (const [tid, state] of tabAgents)');
+    expect(agentMgrSrc).toContain('for (const [tid, state] of this.tabAgents)');
   });
 });
 
