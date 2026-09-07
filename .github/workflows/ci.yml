@@ -17,6 +17,8 @@ jobs:
           node-version: 22
       - name: Install
         run: npm install --no-audit --no-fund
+      - name: Add bun to PATH (test script uses bun)
+        run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - name: Build
         run: npm run build --if-present
       - name: Test
